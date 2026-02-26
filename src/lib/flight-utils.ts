@@ -72,9 +72,10 @@ export function headingToCardinal(degrees: number | null): string {
   return directions[index];
 }
 
-/** 
- * Returns true for ADS-B emitter category A7 (rotorcraft / helicopters)
- * or if the callsign matches common helicopter registration patterns in Brazil.
+/**
+ * Returns true for ADS-B emitter category A7 (rotorcraft / helicopters),
+ * or if the callsign/registration matches known Brazilian police/military
+ * helicopter patterns. Used as a fallback when the API omits the category.
  */
 export function isRotorcraft(
   category: number | null,
@@ -84,15 +85,25 @@ export function isRotorcraft(
 
   if (callsign) {
     const clean = callsign.trim().toUpperCase();
-    // Common Brazilian helicopter registration patterns (PS-, PP-, PR- starting with H, J, L, M, O, P, U, X)
-    // and military patterns.
-    // Common Brazilian helicopter registration patterns (PS-, PP-, PR-, PT-)
-    // with known helicopter blocks (G, H, J, L, M, O, P, U, X, Y).
-    const isHeliCallsign = /^(PS|PP|PR|PT)-[GHJLMNOPUXYZ]/i.test(clean) ||
-      /^(PS|PP|PR|PT)[GHJLMNOPUXYZ]/i.test(clean) ||
-      /^(RESGATE|AGUIA|POLICIA|BOMBEIRO)/i.test(clean);
 
-    if (isHeliCallsign) return true;
+    // Brazilian state police and military helicopter callsigns:
+    // AGUIA (SP), FALCAO (MG), GAVIAO (RS), HARPIA (ES/RJ),
+    // GRIFO (SC), CONDOR (CE/BA), PELICANO (PE/AM), FÊNIX/FENIX (DF)
+    const knownCallsigns =
+      /^(AGUIA|FALCAO|GAVIAO|HARPIA|GRIFO|CONDOR|PELICANO|FENIX|FENIX|ARARA|GARUDA)\d*/i;
+
+    // Brazilian civil helicopter registration blocks:
+    // PS-H/J/L/M/O/P/U/X, PP-E/G/H/J/L/M/P/U/X, PR-G/H/J/L/M/O/U, PT-H/Y
+    const civilReg =
+      /^P[PRST]-[EGHJLMNOPUXYZ]/i;
+
+    // Emergency / service callsigns
+    const serviceCallsign =
+      /^(RESGATE|BOMBEIRO|UTI\s?AER|SAMU\s?AER)/i;
+
+    if (knownCallsigns.test(clean) || civilReg.test(clean) || serviceCallsign.test(clean)) {
+      return true;
+    }
   }
 
   return false;
