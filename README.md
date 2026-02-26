@@ -8,6 +8,15 @@ Aeris Mercosul renders live air traffic over Latin American airspaces on a premi
 
 ---
 
+## 🔥 Standout Feature: Advanced 3D Rotorcraft Layer
+
+Unlike the original fork, **Aeris Mercosul** features a fully realized 3D Helicopter layer. This isn't just a different icon—it's a complete architectural implementation:
+- **Custom 3D Model**: High-fidelity MD500 Helicopter GLB model.
+- **Precision Logic**: Custom `isRotorcraft` detection (Category A7).
+- **Rotor-Specific Trails**: Performance-tuned raw geometry trails that skip planar smoothing, ensuring helicopter paths remain perfectly straight and realistic without the smoothing artifacts that plague fixed-wing trails.
+
+---
+
 ## Key Features
 
 - **3D Altitude Separation**: Real-time z-displacement based on barometric altitude.
