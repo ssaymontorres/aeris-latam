@@ -774,10 +774,10 @@ export function FlightLayers({
 
         const fpvId = fpvIcao24Ref.current?.toLowerCase() ?? null;
         const fixedWingFlights = interpolated.filter(
-          (f) => !isRotorcraft(f.category),
+          (f) => !isRotorcraft(f.category, f.callsign),
         );
         const rotorcraftFlights = interpolated.filter((f) =>
-          isRotorcraft(f.category),
+          isRotorcraft(f.category, f.callsign),
         );
         const visibleFlights = fixedWingFlights;
 
@@ -958,7 +958,9 @@ export function FlightLayers({
             altitudeSlice = trimmed.altitudes;
 
             // Full-history tracks and rotorcraft use raw geometry — skip planar smoothing to avoid kinks/loops.
-            const heli = animFlight ? isRotorcraft(animFlight.category) : false;
+            const heli = animFlight
+              ? isRotorcraft(animFlight.category, animFlight.callsign)
+              : false;
             const smoothPathSlice = isFullHistory || heli
               ? pathSlice
               : smoothPlanarPath(pathSlice);

@@ -250,9 +250,8 @@ export async function fetchFlightsByBbox(
             .filter((f): f is FlightState => f !== null)
             .filter(
                 (f) =>
-                    !f.onGround &&
-                    f.baroAltitude !== null &&
-                    // Clip back to the original bbox
+                    // Allow all aircraft with coordinates within the bbox, 
+                    // including those on the ground or at low altitude.
                     f.latitude! >= lamin &&
                     f.latitude! <= lamax &&
                     f.longitude! >= lomin &&
