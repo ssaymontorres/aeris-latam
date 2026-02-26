@@ -19,6 +19,7 @@ export type TrailEntry = {
 };
 
 const MAX_POINTS = 100;
+const MAX_POINTS_ROTORCRAFT = 20;
 const JUMP_THRESHOLD_DEG = 0.3;
 const HISTORICAL_BOOTSTRAP_POLLS = 3;
 const HISTORICAL_BOOTSTRAP_STEP_SEC = 12;
@@ -161,8 +162,9 @@ class TrailStore {
       }
 
       trail.push(pos);
-      if (trail.length > MAX_POINTS) {
-        trail.splice(0, trail.length - MAX_POINTS);
+      const maxPts = f.category === 7 ? MAX_POINTS_ROTORCRAFT : MAX_POINTS;
+      if (trail.length > maxPts) {
+        trail.splice(0, trail.length - maxPts);
       }
     }
 

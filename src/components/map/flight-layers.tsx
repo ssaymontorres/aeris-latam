@@ -33,7 +33,7 @@ const AIRCRAFT_SCENEGRAPH_URL = "/models/airplane.glb";
 const HELICOPTER_SCENEGRAPH_URL = "/models/Helicopter.glb";
 const AIRCRAFT_PX_PER_UNIT = 0.3;
 const BASE_AIRCRAFT_SIZE = 25;
-const BASE_HELICOPTER_SIZE = 35;
+const BASE_HELICOPTER_SIZE = 22;
 const AIRCRAFT_PICK_RADIUS_PX = 14;
 
 const CATEGORY_TINT: Record<number, [number, number, number]> = {
