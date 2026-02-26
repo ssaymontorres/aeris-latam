@@ -60,6 +60,14 @@ export const REGIONS: City[] = [
         radius: 2.49,
     },
     {
+        id: "vix",
+        name: "Vitória",
+        country: "BR",
+        iata: "VIX",
+        coordinates: [-40.2864, -20.2581],
+        radius: 2.49,
+    },
+    {
         id: "for",
         name: "Fortaleza",
         country: "BR",

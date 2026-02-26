@@ -72,7 +72,28 @@ export function headingToCardinal(degrees: number | null): string {
   return directions[index];
 }
 
-/** Returns true for ADS-B emitter category A7 (rotorcraft / helicopters). */
-export function isRotorcraft(category: number | null): boolean {
-  return category === 7;
+/** 
+ * Returns true for ADS-B emitter category A7 (rotorcraft / helicopters)
+ * or if the callsign matches common helicopter registration patterns in Brazil.
+ */
+export function isRotorcraft(
+  category: number | null,
+  callsign?: string | null
+): boolean {
+  if (category === 7) return true;
+
+  if (callsign) {
+    const clean = callsign.trim().toUpperCase();
+    // Common Brazilian helicopter registration patterns (PS-, PP-, PR- starting with H, J, L, M, O, P, U, X)
+    // and military patterns.
+    // Common Brazilian helicopter registration patterns (PS-, PP-, PR-, PT-)
+    // with known helicopter blocks (G, H, J, L, M, O, P, U, X, Y).
+    const isHeliCallsign = /^(PS|PP|PR|PT)-[GHJLMNOPUXYZ]/i.test(clean) ||
+      /^(PS|PP|PR|PT)[GHJLMNOPUXYZ]/i.test(clean) ||
+      /^(RESGATE|AGUIA|POLICIA|BOMBEIRO)/i.test(clean);
+
+    if (isHeliCallsign) return true;
+  }
+
+  return false;
 }
