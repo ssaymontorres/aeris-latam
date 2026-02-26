@@ -248,15 +248,31 @@ export async function fetchFlightsByBbox(
         const flights = aircraftList
             .map(parseAircraft)
             .filter((f): f is FlightState => f !== null)
-            .filter(
-                (f) =>
-                    // Allow all aircraft with coordinates within the bbox, 
-                    // including those on the ground or at low altitude.
-                    f.latitude! >= lamin &&
-                    f.latitude! <= lamax &&
-                    f.longitude! >= lomin &&
-                    f.longitude! <= lomax,
-            );
+            .filter((f): boolean => {
+                // Always filter to bbox
+                if (
+                    f.latitude! < lamin ||
+                    f.latitude! > lamax ||
+                    f.longitude! < lomin ||
+                    f.longitude! > lomax
+                ) return false;
+
+                // Import isRotorcraft inline via category + callsign pattern
+                const cat = f.category;
+                const cs = f.callsign?.trim().toUpperCase() ?? "";
+                const isHeli =
+                    cat === 7 ||
+                    /^(AGUIA|FALCAO|GAVIAO|HARPIA|GRIFO|CONDOR|PELICANO|FENIX|ARARA|GARUDA)\d*/i.test(cs) ||
+                    /^P[PRST]-[EGHJLMNOPUXYZ]/i.test(cs) ||
+                    /^(RESGATE|BOMBEIRO|UTI\s?AER|SAMU\s?AER)/i.test(cs);
+
+                // Rotorcraft: always show, even on ground or without altitude
+                if (isHeli) return true;
+
+                // Fixed-wing: must be airborne with a valid altitude to avoid
+                // ground trails from taxiing aircraft or vehicles with transponders
+                return !f.onGround && f.baroAltitude !== null;
+            });
 
         return {
             flights,
