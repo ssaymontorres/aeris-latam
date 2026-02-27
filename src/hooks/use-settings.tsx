@@ -22,6 +22,7 @@ export type Settings = {
   trailDistance: number;
   showShadows: boolean;
   showAltitudeColors: boolean;
+  showRadar: boolean;
   fpvChaseDistance: number;
 };
 
@@ -65,6 +66,7 @@ const DEFAULT_SETTINGS: Settings = {
   trailDistance: 40,
   showShadows: true,
   showAltitudeColors: true,
+  showRadar: false,
   fpvChaseDistance: 0.0048,
 };
 
@@ -96,6 +98,7 @@ function isValidSettings(obj: unknown): obj is Settings {
     s.trailDistance <= TRAIL_DISTANCE_MAX &&
     typeof s.showShadows === "boolean" &&
     typeof s.showAltitudeColors === "boolean" &&
+    typeof s.showRadar === "boolean" &&
     typeof s.fpvChaseDistance === "number" &&
     Number.isFinite(s.fpvChaseDistance) &&
     s.fpvChaseDistance >= FPV_CHASE_DISTANCE_MIN &&

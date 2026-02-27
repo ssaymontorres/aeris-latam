@@ -20,6 +20,7 @@ import {
   Plane,
   Eye,
   Loader2,
+  CloudSun,
 } from "lucide-react";
 import { REGIONS as CITIES, type City } from "@/lib/regions";
 import { searchAirports, airportToCity } from "@/lib/airports";
@@ -915,6 +916,13 @@ function SettingsContent() {
           description="Color aircraft and trails by altitude"
           checked={settings.showAltitudeColors}
           onChange={(v) => update("showAltitudeColors", v)}
+        />
+        <SettingRow
+          icon={<CloudSun className="h-4 w-4" />}
+          title="Weather radar"
+          description="Live precipitation radar (RainViewer)"
+          checked={settings.showRadar}
+          onChange={(v) => update("showRadar", v)}
         />
 
         <div className="px-3 pt-2">
