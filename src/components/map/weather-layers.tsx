@@ -21,8 +21,8 @@ export function WeatherLayers({ showRadar }: { showRadar: boolean }) {
                 if (data.radar?.past?.length > 0) {
                     const latest = data.radar.past[data.radar.past.length - 1];
                     const host = data.host || "https://tilecache.rainviewer.com";
-                    // Using 256px tiles, original colors (1), and smooth (1), snow (1) options
-                    setTileUrl(`${host}${latest.path}/256/{z}/{x}/{y}/1/1_1.png`);
+                    // Using 256px tiles, Universal Blue scheme (4), smooth (1), snow (1) options
+                    setTileUrl(`${host}${latest.path}/256/{z}/{x}/{y}/4/1_1.png`);
                 }
             } catch (err) {
                 console.error("[Weather] Failed to fetch radar info:", err);
@@ -40,11 +40,7 @@ export function WeatherLayers({ showRadar }: { showRadar: boolean }) {
         const m = map;
 
         function updateLayer() {
-            if (!showRadar || !tileUrl) {
-                if (m.getLayer(LAYER_ID)) m.removeLayer(LAYER_ID);
-                if (m.getSource(SOURCE_ID)) m.removeSource(SOURCE_ID);
-                return;
-            }
+            if (!tileUrl) return;
 
             if (!m.getSource(SOURCE_ID)) {
                 m.addSource(SOURCE_ID, {
@@ -52,30 +48,15 @@ export function WeatherLayers({ showRadar }: { showRadar: boolean }) {
                     tiles: [tileUrl],
                     tileSize: 256,
                 });
-            } else {
-                // To refresh tiles if URL changed
-                const source = m.getSource(SOURCE_ID) as any;
-                if (source.tiles && source.tiles[0] !== tileUrl) {
-                    m.removeLayer(LAYER_ID);
-                    m.removeSource(SOURCE_ID);
-                    m.addSource(SOURCE_ID, {
-                        type: "raster",
-                        tiles: [tileUrl],
-                        tileSize: 256,
-                    });
-                }
             }
 
             if (!m.getLayer(LAYER_ID)) {
-                // Find a layer to insert underneath, or just add it
-                // We want it above terrain/land but below aircraft and labels
                 const layers = m.getStyle().layers;
                 let beforeId: string | undefined;
 
-                // Try to find a good injection point (e.g., before labels)
                 if (layers) {
                     for (const l of layers) {
-                        if (l.type === "symbol" || l.id.includes("label") || l.id.includes("airport")) {
+                        if (l.type === "symbol" || l.id.includes("label") || l.id.includes("airport") || l.id.includes("aircraft")) {
                             beforeId = l.id;
                             break;
                         }
@@ -86,11 +67,27 @@ export function WeatherLayers({ showRadar }: { showRadar: boolean }) {
                     id: LAYER_ID,
                     type: "raster",
                     source: SOURCE_ID,
+                    layout: {
+                        visibility: showRadar ? "visible" : "none",
+                    },
                     paint: {
-                        "raster-opacity": 0.65,
-                        "raster-fade-duration": 300,
+                        "raster-opacity": 0.55, // Slightly lower for more "glass" look
+                        "raster-fade-duration": 500,
+                        "raster-brightness-max": 0.8,
+                        "raster-contrast": 0.1,
                     },
                 }, beforeId);
+            } else {
+                m.setLayoutProperty(LAYER_ID, "visibility", showRadar ? "visible" : "none");
+
+                // Update tiles if URL changed
+                const source = m.getSource(SOURCE_ID) as any;
+                if (source && source.tiles && source.tiles[0] !== tileUrl) {
+                    const style = m.getStyle();
+                    if (style.sources[SOURCE_ID]) {
+                        (m.getSource(SOURCE_ID) as any).setTiles([tileUrl]);
+                    }
+                }
             }
         }
 
@@ -99,8 +96,7 @@ export function WeatherLayers({ showRadar }: { showRadar: boolean }) {
 
         return () => {
             m.off("style.load", updateLayer);
-            if (m.getLayer(LAYER_ID)) m.removeLayer(LAYER_ID);
-            if (m.getSource(SOURCE_ID)) m.removeSource(SOURCE_ID);
+            // We keep the source/layer for stability unless unmounting
         };
     }, [map, isLoaded, showRadar, tileUrl]);
 
