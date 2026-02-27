@@ -14,6 +14,7 @@ import { Map as MapView } from "@/components/map/map";
 import { CameraController } from "@/components/map/camera-controller";
 import { AirportLayer } from "@/components/map/airport-layer";
 import { FlightLayers } from "@/components/map/flight-layers";
+import { WeatherLayers } from "@/components/map/weather-layers";
 import { FlightCard } from "@/components/ui/flight-card";
 import { FpvHud } from "@/components/ui/fpv-hud";
 import { KeyboardShortcutsHelp } from "@/components/ui/keyboard-shortcuts-help";
@@ -910,6 +911,7 @@ function FlightTrackerInner() {
           fpvIcao24={fpvIcao24}
           fpvPositionRef={fpvPositionRef}
         />
+        <WeatherLayers showRadar={settings.showRadar} />
       </MapView>
 
       <div

@@ -6,6 +6,7 @@ import { Search, X, MapPin, ChevronRight } from "lucide-react";
 import { REGIONS as CITIES, type City } from "@/lib/regions";
 import { searchAirports, type Airport } from "@/lib/airports";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { fetchMetar, type MetarData, getCategoryColor, iataToIcao } from "@/lib/weather";
 
 type AirportSearchInputProps = {
   placeholder?: string;
@@ -191,6 +192,8 @@ export function AirportSearchInput({
                         name={city.name}
                         detail={`${city.iata} · ${city.country}`}
                         isActive={selected?.iata === city.iata}
+                        iata={city.iata}
+                        country={city.country}
                         onClick={() => handleSelectCity(city)}
                       />
                     ))}
@@ -211,6 +214,8 @@ export function AirportSearchInput({
                         name={airport.name}
                         detail={`${airport.iata} · ${airport.city}, ${airport.country}`}
                         isActive={selected?.iata === airport.iata}
+                        iata={airport.iata}
+                        country={airport.country}
                         onClick={() => handleSelect(airport)}
                       />
                     ))}
@@ -229,13 +234,26 @@ function DropdownRow({
   name,
   detail,
   isActive,
+  iata,
+  country,
   onClick,
 }: {
   name: string;
   detail: string;
   isActive: boolean;
+  iata: string;
+  country: string;
   onClick: () => void;
 }) {
+  const [metar, setMetar] = useState<MetarData | null>(null);
+
+  useEffect(() => {
+    if (iata.length === 3) {
+      const icao = iataToIcao(iata, country);
+      fetchMetar(icao).then(setMetar);
+    }
+  }, [iata, country]);
+
   return (
     <button
       onClick={onClick}
@@ -246,7 +264,18 @@ function DropdownRow({
         <MapPin className="h-3 w-3 text-white/35" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="truncate text-[12px] font-medium text-white/75">{name}</p>
+        <div className="flex items-center gap-2">
+          <p className="truncate text-[12px] font-medium text-white/75">{name}</p>
+          {metar && (
+            <span
+              className="px-1.5 py-0.5 rounded text-[8px] font-bold text-white/90"
+              style={{ backgroundColor: getCategoryColor(metar.category) }}
+              title={metar.raw}
+            >
+              {metar.category}
+            </span>
+          )}
+        </div>
         <p className="text-[10px] text-white/25">{detail}</p>
       </div>
       <ChevronRight className="h-3 w-3 shrink-0 text-white/10 group-hover:text-white/20" />
