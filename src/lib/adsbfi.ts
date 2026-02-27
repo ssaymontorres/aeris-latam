@@ -50,6 +50,7 @@ type AdsbFiAircraft = {
     on_ground?: unknown;     // not always present; inferred from alt_baro
     category?: unknown;      // emitter category string e.g. "A1"
     r?: unknown;             // registration (used to infer origin country)
+    t?: unknown;             // ICAO aircraft type code e.g. "AS50", "EC45"
 };
 
 type AdsbFiResponse = {
@@ -85,6 +86,30 @@ const CATEGORY_MAP: Record<string, number> = {
 };
 
 // ── Parse a single aircraft entry ─────────────────────────────────────────────
+
+// ── Known helicopter ICAO type codes ─────────────────────────────────────────
+// Source: ICAO Doc 8643 — Aircraft Type Designators (rotorcraft subset)
+const HELICOPTER_TYPE_CODES = new Set([
+    // Aerospatiale / Airbus
+    "AS50", "AS55", "AS32", "AS65", "AS3B", "EC20", "EC25", "EC30", "EC35", "EC45",
+    "EC55", "EC75", "H125", "H130", "H135", "H145", "H155", "H160", "H175", "H215", "H225",
+    // Bell
+    "B06", "B06T", "B105", "B206", "B212", "B214", "B222", "B230", "B412", "B430", "B47G", "B47J",
+    // Robinson
+    "R22", "R44", "R66",
+    // Sikorsky
+    "S300", "S61", "S76", "S76A", "S76B", "S76C", "S92",
+    // Leonardo / Agusta
+    "A109", "A119", "A129", "AW09", "AW19", "AW39", "AW69", "AWNM",
+    // MD Helicopters
+    "H500", "MD52", "MD60", "MD62", "MD90",
+    // Hughes / Schweizer
+    "H269", "S269",
+    // Mil / Russian
+    "MI8", "MI17", "MI24", "MI26",
+    // Piper PA / other light
+    "EXEC", "LAMA", "SK76",
+]);
 
 function isFiniteNum(v: unknown): v is number {
     return typeof v === "number" && Number.isFinite(v);
@@ -128,10 +153,19 @@ function parseAircraft(ac: AdsbFiAircraft): FlightState | null {
     const originCountry =
         typeof ac.r === "string" && ac.r.length > 0 ? ac.r.slice(0, 2) : "??";
 
-    const category =
+    const typeCode =
+        typeof ac.t === "string" ? ac.t.trim().toUpperCase() : null;
+
+    let category =
         typeof ac.category === "string"
             ? (CATEGORY_MAP[ac.category] ?? null)
             : null;
+
+    // If the API didn't tag the category but we recognise the type code as a
+    // helicopter, force category 7 so renderers treat it as rotorcraft.
+    if (category !== 7 && typeCode && HELICOPTER_TYPE_CODES.has(typeCode)) {
+        category = 7;
+    }
 
     return {
         icao24,
